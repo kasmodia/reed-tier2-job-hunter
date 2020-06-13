@@ -1,0 +1,4 @@
+Read company names from a list
+Query Reed's API for company ID since it is not provided in the site
+Store companies IDs in a file to be used in job search
+On each run, the program will iterate over the companies IDs and query Reed's API for jobs
