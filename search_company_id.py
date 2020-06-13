@@ -4,22 +4,16 @@ import logging
 import requests
 from requests.auth import HTTPBasicAuth
 
-KEY_FILE = 'REED_API_KEY'
-REED_KEYWORD = 'https://www.reed.co.uk/api/1.0/search?keywords='
-
 
 def save_company_id(company_name, company_id):
     with open('companies_ids.csv', 'a') as f:
         f.write(f'{company_id},{company_name}\n')
 
 
-def get_company_id(company_name):
-    with open(KEY_FILE) as f:
-        api_key = f.readline()
-
+def find_company_id(company_name):
     json = {}
     try:
-        response = requests.get(f'{REED_KEYWORD}{company_name}&resultsToTake=5', auth=HTTPBasicAuth(api_key, ''))
+        response = requests.get(f'{REED_KEYWORD}{company_name}&resultsToTake=5', auth=HTTPBasicAuth(API_KEY, ''))
         response.raise_for_status()
         json = response.json()
     except requests.HTTPError as http_err:
@@ -37,6 +31,12 @@ def get_company_id(company_name):
             return result.get('employerId')
 
 
+def read_api_key():
+    with open(KEY_FILE) as f:
+        api_key = f.readline()
+    return api_key
+
+
 def store_companies_ids(starting_from=None):
     get_started = True if starting_from is None else False
     with open('tier2_companies.txt') as companies_names:
@@ -51,35 +51,41 @@ def store_companies_ids(starting_from=None):
             if not get_started:
                 continue
 
-            company_id = get_company_id(name)
+            company_id = find_company_id(name)
             if company_id is not None:
                 logging.info(f'an ID is found for company {name}')
                 save_company_id(name, company_id)
             logging.info(f'{name} not found')
+            return
 
 
-def generate_auth_header(api_key):
-    base64string = base64.b64encode(f'{api_key}:'.encode())
+def generate_auth_header():
+    base64string = base64.b64encode(f'{API_KEY}:'.encode())
     return b'Authorization: Basic %s' % base64string
 
 
-if __name__ == '__main__':
+def init_logger():
     # File to log to
-    logFile = 'crawler.log'
+    log_file = 'crawler.log'
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                        datefmt='%m-%d %H:%M',
+                        filename=log_file,
+                        filemode='w')
+    # define a Handler which writes INFO messages or higher to the sys.stderr
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    # set a format which is simpler for console use
+    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    # tell the handler to use this format
+    console.setFormatter(formatter)
+    # add the handler to the root logger
+    logging.getLogger('').addHandler(console)
 
-    # Setup File handler
-    file_handler = logging.FileHandler(logFile)
-    file_handler.setLevel(logging.INFO)
 
-    # Setup Stream Handler (i.e. console)
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.INFO)
-
-    # Get our logger
-    app_log = logging.getLogger('root')
-    app_log.setLevel(logging.INFO)
-
-    # Add both Handlers
-    app_log.addHandler(file_handler)
-    app_log.addHandler(stream_handler)
+if __name__ == '__main__':
+    KEY_FILE = 'REED_API_KEY'
+    REED_KEYWORD = 'https://www.reed.co.uk/api/1.0/search?keywords='
+    API_KEY = read_api_key()
+    init_logger()
     store_companies_ids(starting_from='Al-Emaan Centre')
