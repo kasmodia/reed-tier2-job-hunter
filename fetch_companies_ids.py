@@ -36,7 +36,7 @@ def fetch_and_store_companies_ids():
         logging.debug(f'Reading {base.tier_2_names_file} ..')
         companies_names = companies_names.readlines()
         for name in companies_names:
-            # remove trailing \n
+            # remove trailing '\n'
             name = name.strip()
 
             if base.starting_from == name:
@@ -57,7 +57,6 @@ def generate_auth_header():
 
 
 if __name__ == '__main__':
-    logging.info('initializing Base ..')
     base = Base()
     logging.info('Fetching companies IDs ..')
     fetch_and_store_companies_ids()

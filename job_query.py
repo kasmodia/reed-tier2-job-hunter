@@ -1,10 +1,10 @@
 import logging
 from collections import namedtuple
+from datetime import date
 
 import requests
 
 from base import Base
-from job import Job
 
 
 class JobQuery:
@@ -16,22 +16,21 @@ class JobQuery:
 
     def run(self):
         jobs = self.build_jobs_list()
-        self.init_email(jobs)
+        self.compose_email(jobs)
         self.send_email(jobs)
 
     def build_jobs_list(self):
         jobs = []
         for company in self.load_company():
-            json = {}
+            json_response = {}
             try:
-                json = self.base.get_json_response(self.job_query_url, company.id, results_to_take=10)
+                json_response = self.base.get_json_response(self.job_query_url, company.id, results_to_take=100)
             except requests.HTTPError:
                 logging.error(f'Error fetching jobs for company {company}')
 
-            job = Job(job_id=json['job_id'], job_title=json['job_title'], job_description=json['job_description'],
-                      employer_name=json['employer_name'], location=json['location'], date=json['date'],
-                      url=json['url'])
-            jobs.append(job)
+            company_jobs = json_response['results']
+            self.filter_jobs(company_jobs, 'date', date.today().strftime("%d/%m/%y"))
+            jobs.extend(company_jobs)
         return jobs
 
     def load_company(self):
@@ -39,6 +38,18 @@ class JobQuery:
             for line in f.readlines():
                 split = line.split(',')
                 yield self.Company(id=split[0].strip(), name=split[1].strip())
+
+    # TODO:
+    def compose_email(self, jobs):
+        pass
+
+    # TODO:
+    def send_email(self, jobs):
+        pass
+
+    @staticmethod
+    def filter_jobs(jobs, key, value):
+        jobs[:] = [job for job in jobs if job[key] == value]
 
 
 query = JobQuery()
