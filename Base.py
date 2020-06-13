@@ -24,10 +24,10 @@ class Base:
                             format='%(asctime)s %(name)-8s %(levelname)-8s %(message)s',
                             datefmt='%m-%d %H:%M',
                             filename=log_file,
-                            filemode='w')
-        # define a Handler which writes INFO messages or higher to the sys.stderr
+                            filemode='a')
+        # define a Handler which writes DEBUG messages or higher to the sys.stderr
         console = logging.StreamHandler()
-        console.setLevel(logging.INFO)
+        console.setLevel(logging.DEBUG)
         # set a format which is simpler for console use
         formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
         # tell the handler to use this format
@@ -42,17 +42,16 @@ class Base:
         return key
 
     def get_json_response(self, url, company):
-        json = {}
+        response = requests.get(f'{url}{company}&resultsToTake=5', auth=HTTPBasicAuth(self.api_key, ''))
         try:
-            response = requests.get(f'{url}{company}&resultsToTake=5', auth=HTTPBasicAuth(self.api_key, ''))
             response.raise_for_status()
-            json = response.json()
         except requests.HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')
             logging.error(f'response: {http_err.response.text}')
             self.set_config('start_id_search_from', company)
             raise http_err
 
+        json = response.json()
         if 'results' not in json:
             logging.error('Unexpected response from Reed')
             logging.error(json)

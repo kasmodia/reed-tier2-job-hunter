@@ -4,11 +4,13 @@ from Base import Base
 
 
 def store_company_id(company_name, company_id):
+    logging.debug(f"Storing {company_name}'s ID {company_id} ..")
     with open(base.ids_file, 'a') as f:
         f.write(f'{company_id},{company_name}\n')
 
 
 def fetch_company_id(company_name):
+    logging.debug(f"Fetching {company_name}'s ID ..")
     keyword_url = base.config['DEFAULT']['reed_keyword_url']
     json = base.get_json_response(keyword_url, company_name)
     for result in json['results']:
@@ -21,6 +23,7 @@ def fetch_company_id(company_name):
 def fetch_and_store_companies_ids():
     get_started = True if base.starting_from is None else False
     with open(base.tier_2_names_file) as companies_names:
+        logging.debug(f'Reading {base.tier_2_names_file} ..')
         companies_names = companies_names.readlines()
         for name in companies_names:
             # remove trailing \n
@@ -38,10 +41,13 @@ def fetch_and_store_companies_ids():
 
 
 def generate_auth_header():
+    logging.debug('Generating Auth header ..')
     base64string = base64.b64encode(f'{base.api_key}:'.encode())
     return b'Authorization: Basic %s' % base64string
 
 
 if __name__ == '__main__':
+    logging.info('initializing Base ..')
     base = Base()
+    logging.info('Fetching companies IDs ..')
     fetch_and_store_companies_ids()
