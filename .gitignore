@@ -1,4 +1,4 @@
 env/
 *.log
 REED_API_KEY
-__pycache__
+__pycache__/
