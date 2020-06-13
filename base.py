@@ -41,21 +41,20 @@ class Base:
             key = f.readline()
         return key
 
-    def get_json_response(self, url, company):
-        response = requests.get(f'{url}{company}&resultsToTake=5', auth=HTTPBasicAuth(self.api_key, ''))
+    def get_json_response(self, url, company, results_to_take=5):
+        response = requests.get(f'{url}{company}&resultsToTake={results_to_take}', auth=HTTPBasicAuth(self.api_key, ''))
         try:
             response.raise_for_status()
         except requests.HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')
             logging.error(f'response: {http_err.response.text}')
-            self.set_config('start_id_search_from', company)
             raise http_err
 
         json = response.json()
+
         if 'results' not in json:
             logging.error('Unexpected response from Reed')
             logging.error(json)
-            self.config['DEFAULT']['start_id_search_from'] = company
             raise requests.HTTPError()
         return json
 

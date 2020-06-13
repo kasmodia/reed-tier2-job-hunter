@@ -1,6 +1,10 @@
 import base64
 import logging
-from Base import Base
+import sys
+
+import requests
+
+from base import Base
 
 
 def store_company_id(company_name, company_id):
@@ -12,7 +16,13 @@ def store_company_id(company_name, company_id):
 def fetch_company_id(company_name):
     logging.debug(f"Fetching {company_name}'s ID ..")
     keyword_url = base.config['DEFAULT']['reed_keyword_url']
-    json = base.get_json_response(keyword_url, company_name)
+    json = {}
+    try:
+        json = base.get_json_response(keyword_url, company_name)
+    except requests.HTTPError as err:
+        # save last queried company
+        base.set_config('start_id_search_from', company_name)
+        sys.exit()
     for result in json['results']:
         if result.get('employerName').lower().strip() == company_name.lower().strip():
             logging.info(f'an ID is found for company {company_name}')
