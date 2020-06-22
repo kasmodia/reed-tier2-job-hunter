@@ -1,6 +1,7 @@
 import base64
 import logging
 import sys
+import time
 
 import requests
 
@@ -22,7 +23,19 @@ def fetch_company_id(company_name):
     except requests.HTTPError as err:
         # save last queried company
         base.set_config('start_id_search_from', company_name)
-        sys.exit()
+        # sleep for an hour and try again if quota reached
+        if err.response.status_code == 403:
+            time.sleep(61 * 60)
+            fetch_company_id(company_name)
+        else:
+            sys.exit()
+
+    if 'results' not in json:
+        logging.warning("json doesn't contain 'results' object", json)
+        logging.warning(json)
+        # wait another minute and try again
+        time.sleep(1 * 60)
+        fetch_company_id(company_name)
     for result in json['results']:
         if result.get('employerName').lower().strip() == company_name.lower().strip():
             logging.info(f'an ID is found for company {company_name}')
