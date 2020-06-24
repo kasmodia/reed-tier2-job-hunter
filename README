@@ -1,4 +1,5 @@
-Read company names from a list
-Query Reed's API for company ID since it is not provided in the site
-Store companies IDs in a file to be used in job search
-On each run, the program will iterate over the companies IDs and query Reed's API for jobs
+- Read Tier 2 Visa sponsoring company names from this official PDF: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/893889/2020-06-22_Tier_2_5_Register_of_Sponsors.pdf
+- Query Reed's API for company ID since it is not provided in the site
+- Store companies IDs in a file to be used in job search
+- On each run, the program will iterate over the companies IDs and query Reed's API for jobs
+- Send emails to registered users with any new job ads from any of these companies registered on Reed
