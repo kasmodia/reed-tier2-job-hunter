@@ -3,3 +3,4 @@
 - Store companies IDs in a file to be used in job search
 - On each run, the program will iterate over the companies IDs and query Reed's API for jobs
 - Send emails to registered users with any new job ads from any of these companies registered on Reed
+- Rate Limter support
